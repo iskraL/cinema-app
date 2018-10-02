@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class CinemaServer  implements ClientSocketHandler {
+public class CinemaServer implements ClientSocketHandler {
     private String name;
     private int portNumber;
 
@@ -33,7 +33,7 @@ public class CinemaServer  implements ClientSocketHandler {
         } while (!consoleInput.readLine().equalsIgnoreCase("n"));
     }
 
-    public void waitForConnections() {
+    public void waitForConnections() throws IOException {
         while (true) {
             clientSocket = createConnection(cinemaSocket);
             if(clientSocket == null) {
@@ -79,9 +79,9 @@ public class CinemaServer  implements ClientSocketHandler {
     }
 
     @Override
-    public synchronized boolean isMovieSeatAvailable(int movieId, int seatNumber) {
-        Movie movie = this.getMovieById(movieId);
-        return movie.isSeatTaken(seatNumber);
+    public List<Integer> getFreeSeats(int movieId) {
+        Movie movie = getMovieById(movieId);
+        return movie.getFreeSeats();
     }
 
     private Movie getMovieById(int movieId) {

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3cb5a63c-d5f2-4e15-893a-37aa9197b8d1" name="Default" comment="" />
+    <list default="true" id="3cb5a63c-d5f2-4e15-893a-37aa9197b8d1" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/../Server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Server/src/CinemaServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/src/CinemaServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Server/src/ClientConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/src/ClientConnection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Server/src/ClientSocketHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/src/ClientSocketHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Server/src/CommandType.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/src/CommandType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Server/src/Movie.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Server/src/Movie.java" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -68,8 +75,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/VisitorFrame.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="392">
-              <caret line="167" column="30" selection-start-line="167" selection-start-column="30" selection-end-line="167" selection-end-column="30" />
+            <state relative-caret-position="17">
+              <caret line="52" column="30" lean-forward="true" selection-start-line="52" selection-start-column="30" selection-end-line="52" selection-end-column="30" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#554#555#0" expanded="true" />
@@ -114,6 +121,9 @@
       <find>out</find>
     </findStrings>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -131,11 +141,13 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="682" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="27" />
+    <option name="y" value="-17" />
     <option name="width" value="684" />
     <option name="height" value="729" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -261,7 +273,7 @@
     <option name="totallyTimeSpent" value="89543000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.016778523" />
@@ -348,8 +360,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/VisitorFrame.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="392">
-          <caret line="167" column="30" selection-start-line="167" selection-start-column="30" selection-end-line="167" selection-end-column="30" />
+        <state relative-caret-position="17">
+          <caret line="52" column="30" lean-forward="true" selection-start-line="52" selection-start-column="30" selection-end-line="52" selection-end-column="30" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#554#555#0" expanded="true" />

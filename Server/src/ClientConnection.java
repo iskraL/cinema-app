@@ -1,92 +1,80 @@
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ClientConnection extends Thread {
     private ClientSocketHandler clientSocketHandler;
-    private Socket visitorSocket;
+    private Socket clientSocket;
     private BufferedReader in;
     private PrintWriter out;
-    private ConnectionState connectionState;
-
-    public void setConnectionState(ConnectionState connectionState) {
-        this.connectionState = connectionState;
-    }
-
-    public ConnectionState getConnectionState() {
-        return connectionState;
-    }
 
     public ClientConnection(Socket clientSocket, ClientSocketHandler clientSocketHandler) throws IOException {
         this.clientSocketHandler = clientSocketHandler;
-        this.visitorSocket = clientSocket;
-        this.setConnectionState(ConnectionState.OPENING);
+        this.clientSocket = clientSocket;
         in = createInputStream();
         out = createOutputStream();
     }
 
     public BufferedReader createInputStream() throws IOException {
-        return new BufferedReader(new InputStreamReader(visitorSocket.getInputStream()));
+        return new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     }
 
     public PrintWriter createOutputStream() throws IOException {
-        return new PrintWriter(visitorSocket.getOutputStream(), true);
+        return new PrintWriter(clientSocket.getOutputStream(), true);
     }
 
-    public void readMessage(ConnectionState connectionState) {
-        if (connectionState == ConnectionState.CLOSED) {
-            return;
-        }
-
-        String message;
-        do {
+    public void buyTickets() throws IOException {
+        while(true) {
+            String message = in.readLine();
             try {
-                message = in.readLine();
-            } catch (IOException e) {
-                clientSocketHandler.closeClientConnection(this);
-                break;
-            }
-
-            processInput(message);
-        } while (this.connectionState != connectionState);
-    }
-
-    public void buyTickets() {
-        readMessage(ConnectionState.OPEN);
-    }
-
-    public void ticketsBought() {
-        readMessage(ConnectionState.CLOSED);
-    }
-
-    private void processInput(String message) {
-        Command command = this.parseCommand(message);
-        switch (command.getCommandType()) {
-            case BUY:
-                int movieId = command.getArgs()[0];
-                int seatNumber = command.getArgs()[1];
-
-                boolean isSeatAvailable = this.clientSocketHandler.isMovieSeatAvailable(movieId, seatNumber);
-                if (!isSeatAvailable) {
-                    this.setConnectionState(ConnectionState.PENDING);
+                String result = processInput(message);
+                if (result == "") {
                     return;
                 }
-                boolean isTicketBought = false;
-                while (!isTicketBought) {
-                    try {
-                        clientSocketHandler.buyTicket(movieId, seatNumber);
-                        isTicketBought = true;
-                    } catch (Exception ignored) {
-                    }
-                }
-            case BOUGHT:
-                clientSocketHandler.closeClientConnection(this);
-                break;
+                sendSuccess(result);
+            } catch (Exception err) {
+                sendError(err);
+            }
         }
+    }
+
+    private void sendSuccess(String result) {
+        out.printf("SUCCESS:%s", result);
+    }
+
+    private void sendError(Exception err) {
+        out.printf("ERROR:%s", err.getMessage());
+    }
+
+    private String processInput(String message) throws Exception {
+        Command command = this.parseCommand(message);
+        int movieId = command.getArgs()[0];
+        switch (command.getCommandType()) {
+            case BUY:
+                int seatNumber = command.getArgs()[1];
+
+                this.clientSocketHandler.buyTicket(movieId, seatNumber);
+                return String.format("Seat %d for movie %d bough", seatNumber, movieId);
+            case GET_SEATS:
+                List<Integer> freeSeats = this.clientSocketHandler.getFreeSeats(movieId);
+                StringBuilder builder = new StringBuilder();
+                for (int seat : freeSeats) {
+                    builder.append(seat);
+                    builder.append(",");
+                }
+                builder.deleteCharAt(builder.length() - 1);
+                return builder.toString();
+            case CLOSE:
+                return "";
+        }
+
+        return null;
     }
 
     private Command parseCommand(String message) {
-        String[] parts = message.split(":");
+        String[] parts = message.split("/");
         CommandType commandType = CommandType.getFromString(parts[0]);
         int[] args = Arrays.stream(parts)
                 .skip(1)
@@ -96,32 +84,20 @@ public class ClientConnection extends Thread {
         return new Command(commandType, args);
     }
 
-    public void sendRoomId(int roomId) {
-        String output;
-        output = "CHECKIN:" + roomId;
-        out.println(output);
-    }
-
-    public void sendCheckoutCompleteNotice() {
-        out.println("CHECKOUTCOMPLETE:");
-        connectionState = 2;
-    }
-
-    public void sendRejectionNotice() {
-        out.println("NOTEXISTINGROOM:");
-        connectionState = 3;
-    }
-
     public void disconnect() {
         try {
-            visitorSocket.close();
+            clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void run() {
-        buyTickets();
-        ticketsBought();
+        try {
+            buyTickets();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        disconnect();
     }
 }

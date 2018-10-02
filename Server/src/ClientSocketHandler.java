@@ -1,3 +1,5 @@
+import java.util.List;
+
 public interface ClientSocketHandler {
     void closeClientConnection(ClientConnection clientConnection);
 
@@ -5,7 +7,7 @@ public interface ClientSocketHandler {
 
     int getRoomAndCheckInVisitor(int numOFGuests, ClientConnection clientConnection);
 
-    boolean isMovieSeatAvailable(int movieId, int seatNumber);
-
     void buyTicket(int movieId, int seatNumber) throws Exception;
+
+    List<Integer> getFreeSeats(int movieId);
 }
