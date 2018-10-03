@@ -11,7 +11,8 @@ public class Movie {
     private Set<Integer> seatsTaken;
     private int id;
 
-    public Movie(String name, int seatsCount) {
+    public Movie(int id, String name, int seatsCount) {
+        setId(id);
         setName(name);
         setSeatsCount(seatsCount);
         seatsTaken = new HashSet<>();

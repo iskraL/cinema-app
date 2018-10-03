@@ -26,7 +26,7 @@ public class ClientConnection extends Thread {
     }
 
     public void buyTickets() throws IOException {
-        while(true) {
+        while (true) {
             String message = in.readLine();
             try {
                 String result = processInput(message);
@@ -41,36 +41,50 @@ public class ClientConnection extends Thread {
     }
 
     private void sendSuccess(String result) {
-        out.printf("SUCCESS:%s", result);
+        out.printf("SUCCESS:%s%n", result);
     }
 
     private void sendError(Exception err) {
-        out.printf("ERROR:%s", err.getMessage());
+        out.printf("ERROR:%s%n", err.getMessage());
     }
 
     private String processInput(String message) throws Exception {
         Command command = this.parseCommand(message);
-        int movieId = command.getArgs()[0];
+        int movieId;
+        StringBuilder result = new StringBuilder();
         switch (command.getCommandType()) {
             case BUY:
+                movieId = command.getArgs()[0];
                 int seatNumber = command.getArgs()[1];
-
                 this.clientSocketHandler.buyTicket(movieId, seatNumber);
-                return String.format("Seat %d for movie %d bough", seatNumber, movieId);
-            case GET_SEATS:
-                List<Integer> freeSeats = this.clientSocketHandler.getFreeSeats(movieId);
-                StringBuilder builder = new StringBuilder();
-                for (int seat : freeSeats) {
-                    builder.append(seat);
-                    builder.append(",");
+                result.append("buy:");
+                result.append(String.format("Seat %d for movie %d bough", seatNumber, movieId));
+                break;
+            case GET_MOVIES:
+                List<Movie> movies = this.clientSocketHandler.getMovies();
+                result.append("movies:");
+                for (Movie movie : movies) {
+                    result.append(movie.getId());
+                    result.append("-");
+                    result.append(movie.getName());
+                    result.append(",");
                 }
-                builder.deleteCharAt(builder.length() - 1);
-                return builder.toString();
-            case CLOSE:
-                return "";
+
+                result.deleteCharAt(result.length() - 1);
+                break;
+            case GET_SEATS:
+                result.append("seats:");
+                movieId = command.getArgs()[0];
+                List<Integer> freeSeats = this.clientSocketHandler.getFreeSeats(movieId);
+                for (int seat : freeSeats) {
+                    result.append(seat);
+                    result.append(",");
+                }
+                result.deleteCharAt(result.length() - 1);
+                break;
         }
 
-        return null;
+        return result.toString();
     }
 
     private Command parseCommand(String message) {
