@@ -17,8 +17,8 @@ public class App {
     }
 
     public static void main(String[] args) throws IOException {
+        // fakeInput();
         int portNumber = 8081;
-        fakeInput();
         try {
             CinemaServer cinema = new CinemaServer("IMAX", portNumber);
             cinema.addMovies();

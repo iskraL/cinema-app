@@ -1,17 +1,20 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class ClientConnection extends Thread {
-    private ClientSocketHandler clientSocketHandler;
+    private CinemaServer cinemaServer;
     private Socket clientSocket;
     private BufferedReader in;
     private PrintWriter out;
 
-    public ClientConnection(Socket clientSocket, ClientSocketHandler clientSocketHandler) throws IOException {
-        this.clientSocketHandler = clientSocketHandler;
+    public ClientConnection(Socket clientSocket, CinemaServer cinemaServer) throws IOException {
+        this.cinemaServer = cinemaServer;
         this.clientSocket = clientSocket;
         in = createInputStream();
         out = createOutputStream();
@@ -29,10 +32,16 @@ public class ClientConnection extends Thread {
         while (true) {
             String message = in.readLine();
             try {
+                if(message.equals("")){
+                    continue;
+                }
+
                 String result = processInput(message);
-                if (result == "") {
+
+                if (Objects.equals(result, "")) {
                     return;
                 }
+
                 sendSuccess(result);
             } catch (Exception err) {
                 sendError(err);
@@ -50,18 +59,28 @@ public class ClientConnection extends Thread {
 
     private String processInput(String message) throws Exception {
         Command command = this.parseCommand(message);
+
+        cinemaServer.clearClient(command.getClientId());
+
         int movieId;
         StringBuilder result = new StringBuilder();
         switch (command.getCommandType()) {
             case BUY:
                 movieId = command.getArgs()[0];
+                Movie theMovie = cinemaServer.getMovieById(movieId);
                 int seatNumber = command.getArgs()[1];
-                this.clientSocketHandler.buyTicket(movieId, seatNumber);
+                this.cinemaServer.buyTicket(command.getClientId(), movieId, seatNumber);
+                System.out.println("Client " + command.getClientId() + " trying to buy seat " + seatNumber + " for movie" + theMovie .getName());
+
+                this.cinemaServer.addClientMovie(command.getClientId(), movieId);
+                Thread.sleep(5000);
+                this.cinemaServer.clearClient(command.getClientId());
+
                 result.append("buy:");
                 result.append(String.format("Seat %d for movie %d bough", seatNumber, movieId));
                 break;
             case GET_MOVIES:
-                List<Movie> movies = this.clientSocketHandler.getMovies();
+                List<Movie> movies = this.cinemaServer.getMovies();
                 result.append("movies:");
                 for (Movie movie : movies) {
                     result.append(movie.getId());
@@ -73,13 +92,16 @@ public class ClientConnection extends Thread {
                 result.deleteCharAt(result.length() - 1);
                 break;
             case GET_SEATS:
-                result.append("seats:");
                 movieId = command.getArgs()[0];
-                List<Integer> freeSeats = this.clientSocketHandler.getFreeSeats(movieId);
+                result.append("seats:");
+
+                Movie movie = cinemaServer.getMovieById(movieId);
+                List<Integer> freeSeats = movie.getFreeSeats();
                 for (int seat : freeSeats) {
                     result.append(seat);
                     result.append(",");
                 }
+
                 result.deleteCharAt(result.length() - 1);
                 break;
         }
@@ -89,13 +111,14 @@ public class ClientConnection extends Thread {
 
     private Command parseCommand(String message) {
         String[] parts = message.split("/");
-        CommandType commandType = CommandType.getFromString(parts[0]);
+        int clientId = Integer.parseInt(parts[0]);
+        CommandType commandType = CommandType.getFromString(parts[1]);
         int[] args = Arrays.stream(parts)
-                .skip(1)
+                .skip(2)
                 .mapToInt(Integer::parseInt)
                 .toArray();
 
-        return new Command(commandType, args);
+        return new Command(commandType, clientId, args);
     }
 
     public void disconnect() {

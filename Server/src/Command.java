@@ -1,9 +1,11 @@
 public class Command {
     private CommandType commandType;
+    private int clientId;
     private int[] args;
 
-    public Command(CommandType commandType, int[] args) {
+    public Command(CommandType commandType, int clientId, int[] args) {
         setCommandType(commandType);
+        setClientId(clientId);
         setArgs(args);
     }
 
@@ -21,5 +23,13 @@ public class Command {
 
     public int[] getArgs() {
         return args;
+    }
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
+    }
+
+    public int getClientId() {
+        return clientId;
     }
 }

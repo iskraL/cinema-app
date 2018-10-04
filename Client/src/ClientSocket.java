@@ -79,19 +79,19 @@ public class ClientSocket {
     }
 
     public void loadMovies() {
-        String message = "movies";
+        String message = frame.getId() + "/movies";
         out.println(message);
         waitForResponse();
     }
 
     public void getSeats(int movieId) {
-        String message = "seats/" + movieId;
+        String message = frame.getId() + "/seats/" + movieId;
         out.println(message);
         waitForResponse();
     }
 
     public void buyTicket(int movieId, int seatNumber) {
-        String message = "buy/" + movieId + "/" + seatNumber;
+        String message = frame.getId() + "/buy/" + movieId + "/" + seatNumber;
         out.println(message);
         waitForResponse();
     }
@@ -101,14 +101,14 @@ public class ClientSocket {
         do {
             try {
                 message = in.readLine();
-                System.out.println("Hotel: " + message);
+                System.out.println(message);
             } catch (IOException e) {
                 System.out.println("Connection failed!");
                 closeSocket();
                 break;
             }
-            processInput(message);
 
+            processInput(message);
         } while (message == null);
     }
 
@@ -120,13 +120,12 @@ public class ClientSocket {
         }
         switch (command.getType()) {
             case BUY:
-
+                loadMovies();
                 break;
             case GET_MOVIES:
                 List<Movie> movies = Arrays.stream(command.getArgs())
                         .map(idName -> idName.split("-"))
-                        .map(idName -> new Movie(Integer.parseInt(idName[0]), idName[1]))
-                        .collect(Collectors.toList());
+                        .map(idName -> new Movie(Integer.parseInt(idName[0]), idName[1])).collect(Collectors.toList());
                 frame.setMovies(movies);
 
                 break;

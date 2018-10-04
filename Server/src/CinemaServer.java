@@ -1,9 +1,8 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.PriorityBlockingQueue;
 
-public class CinemaServer implements ClientSocketHandler {
+public class CinemaServer {
     private String name;
     private int portNumber;
 
@@ -11,14 +10,17 @@ public class CinemaServer implements ClientSocketHandler {
     private Socket clientSocket;
     private ArrayList<ClientConnection> clientConnections;
     private List<Movie> movies;
-    private Set<Integer> currentlyViewedmMovies;
+
+    private Set<Integer> currentlyViewedMovies;
+    private Map<Integer, Integer> clientsToMoviesMap;
 
     public CinemaServer(String name, int portNumber) {
         setName(name);
         setPortNumber(portNumber);
         movies = new ArrayList<>();
         clientConnections = new ArrayList<>();
-        currentlyViewedmMovies = new HashSet<>();
+        currentlyViewedMovies = new HashSet<>();
+        clientsToMoviesMap = new HashMap<>();
     }
 
     public void addMovies() throws IOException {
@@ -35,6 +37,7 @@ public class CinemaServer implements ClientSocketHandler {
             movies.add(movie);
             System.out.print("Do you want to add new movie? y/n ");
         } while (!consoleInput.readLine().equalsIgnoreCase("n"));
+        System.out.println();
     }
 
     public void waitForConnections() throws IOException {
@@ -44,35 +47,46 @@ public class CinemaServer implements ClientSocketHandler {
                 continue;
             }
 
-            ClientConnection clientConnection =
-                    new ClientConnection(clientSocket, this);
+            ClientConnection clientConnection = new ClientConnection(clientSocket, this);
             clientConnections.add(clientConnection);
             clientConnection.start();
         }
     }
 
-    @Override
-    public List<Integer> getFreeSeats(int movieId) {
+    public synchronized List<Integer> getFreeSeats(int movieId) throws InterruptedException {
         Movie movie = getMovieById(movieId);
         return movie.getFreeSeats();
     }
 
-    @Override
     public List<Movie> getMovies() {
         return movies;
     }
 
-    private Movie getMovieById(int movieId) {
+    public void clearClient(int clientId) {
+        if(clientsToMoviesMap.containsKey(clientId)) {
+            int movieID = clientsToMoviesMap.get(clientId);
+            currentlyViewedMovies.remove(movieID);
+            clientsToMoviesMap.remove(clientId);
+        }
+    }
+
+    public void addClientMovie(int clientId, int movieId) {
+        this.clearClient(clientId);
+        clientsToMoviesMap.put(clientId, movieId);
+        currentlyViewedMovies.add(movieId);
+    }
+
+    public Movie getMovieById(int movieId) {
         return movies.stream()
                 .filter(movie -> movie.getId() == movieId)
                 .findFirst()
                 .orElseThrow();
     }
 
-    @Override
-    public synchronized void buyTicket(int movieId, int seatNumber) throws Exception {
-        while(currentlyViewedmMovies.contains(movieId)) {
-            
+    public synchronized void buyTicket(int clientId, int movieId, int seatNumber) throws Exception {
+        while(currentlyViewedMovies.contains(movieId)) {
+            System.out.println("Client " + clientId + " waiting to release the movie");
+            wait(100);
         }
 
         Movie movie = getMovieById(movieId);
@@ -82,7 +96,6 @@ public class CinemaServer implements ClientSocketHandler {
     public synchronized void closeClientConnection(ClientConnection clientConnection) {
         clientConnection.disconnect();
         clientConnections.remove(clientConnection);
-        System.out.println("Checked out visitor " + clientConnection.getName() + ". Total number of guests left: " + clientConnections.size());
     }
 
     public ServerSocket createServerSocket() throws IOException {

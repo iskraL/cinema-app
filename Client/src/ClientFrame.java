@@ -11,9 +11,11 @@ public class ClientFrame extends JFrame implements WindowListener {
     private JComboBox<Object> moviesComboBox;
     private JComboBox<Object> seatsComboBox;
     private JButton button;
+    private int id;
 
-    public ClientFrame() {
-        super("IMAX Client");
+    public ClientFrame(int id) {
+        super("IMAX Client " + id);
+        setId(id);
         initializeGui();
         initializeActionListeners();
     }
@@ -65,7 +67,6 @@ public class ClientFrame extends JFrame implements WindowListener {
 
     private void showMovie(Movie movie) {
         clientSocket.getSeats(movie.getId());
-
     }
 
     @Override
@@ -113,6 +114,14 @@ public class ClientFrame extends JFrame implements WindowListener {
     @Override
     public void windowDeactivated(WindowEvent e) {
 
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     private class StartButtonListener extends Thread implements ActionListener {
